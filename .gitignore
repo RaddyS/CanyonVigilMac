@@ -1,0 +1,7 @@
+.DS_Store
+.build/
+dist/
+research/*
+!research/PROTOCOL.md
+*.xcuserstate
+xcuserdata/
