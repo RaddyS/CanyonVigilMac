@@ -3,6 +3,11 @@ set -eu
 cd "${0:A:h}"
 app="$PWD/dist/Canyon Vigil.app"
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources" "$PWD/.build/module-cache"
+if [[ ! -f "$app/Contents/Resources/AppIcon.icns" || Tools/GenerateIcon.swift -nt "$app/Contents/Resources/AppIcon.icns" ]]; then
+    swiftc -module-cache-path "$PWD/.build/module-cache" Tools/GenerateIcon.swift -o "$PWD/.build/generate-icon"
+    "$PWD/.build/generate-icon" "$PWD/.build/AppIcon.iconset"
+    iconutil -c icns "$PWD/.build/AppIcon.iconset" -o "$app/Contents/Resources/AppIcon.icns"
+fi
 clang -O2 -Wall -Wextra -Wno-deprecated-declarations Sources/vigilctl.c -framework IOKit -framework CoreFoundation -o "$app/Contents/MacOS/vigilctl"
 swiftc -swift-version 5 -O -parse-as-library -module-cache-path "$PWD/.build/module-cache" -target "$(uname -m)-apple-macosx13.0" Sources/CanyonVigil.swift -o "$app/Contents/MacOS/CanyonVigil" -framework SwiftUI -framework AppKit -framework ApplicationServices
 cat > "$app/Contents/Info.plist" <<'PLIST'
@@ -13,6 +18,7 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <key>CFBundleIdentifier</key><string>local.canyon.vigil.mac</string>
 <key>CFBundleName</key><string>Canyon Vigil</string>
 <key>CFBundleDisplayName</key><string>Canyon Vigil</string>
+<key>CFBundleIconFile</key><string>AppIcon</string>
 <key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleShortVersionString</key><string>0.1.0</string>
 <key>CFBundleVersion</key><string>1</string>
